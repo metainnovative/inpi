@@ -5,6 +5,7 @@ require 'inpi/balance_sheet'
 require 'inpi/configuration'
 require 'inpi/http'
 require 'inpi/seized_balance_sheet'
+require 'inpi/seized_imr'
 require 'inpi/version'
 
 class Inpi
@@ -28,5 +29,9 @@ class Inpi
 
   def self.acts(siren)
     Act.list(siren)
+  end
+
+  def self.seized_imrs(siren)
+    SeizedImr.new(siren)
   end
 end

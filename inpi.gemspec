@@ -32,4 +32,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop'
 
   spec.add_dependency 'activesupport', '>= 5.0'
+  spec.add_dependency 'rubyzip', '~> 2.0'
+  spec.add_dependency 'nokogiri', '~> 1.6', '>= 1.6.6.2'
 end
