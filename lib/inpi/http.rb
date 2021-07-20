@@ -26,7 +26,17 @@ class Inpi
       headers = opts[:headers] || {}
       headers.merge!(cookie: "JSESSIONID=#{session_id}")
 
-      request(path, :get, json_response: opts[:json_response], query: opts[:query], headers: headers)
+      response = request(path, :get, json_response: opts[:json_response], query: opts[:query], headers: headers)
+
+      if response.is_a?(Net::HTTPUnauthorized)
+        if opts[:retried]
+          raise Inpi::AuthenticationError, response
+        else
+          get(path, opts.merge(retried: true))
+        end
+      end
+
+      response
     end
 
     def refresh_session
