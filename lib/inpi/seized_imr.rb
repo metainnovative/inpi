@@ -7,53 +7,57 @@ require 'zip'
 
 require 'inpi/rncs_server_error'
 
-class Nokogiri::XML::Node
-  def to_hash
-    if text?
-      text.presence
-    elsif element?
-      elements = children.map(&:to_hash).compact
-      elements = if elements.size == 1
-                   elements.first
-                 else
-                   elements.each_with_object({}) do |item, acc|
-                     key = item.keys.first
-                     value = item.values.first
+module NokogiriRefinements
+  refine Nokogiri::XML::Node do
+    def to_hash
+      if text?
+        text.presence
+      elsif element?
+        elements = children.map(&:to_hash).compact
+        elements = if elements.size == 1
+                     elements.first
+                   else
+                     elements.each_with_object({}) do |item, acc|
+                       key = item.keys.first
+                       value = item.values.first
 
-                     acc[key] = if acc.key?(key)
-                                  case acc[key]
-                                  when Array
-                                    acc[key] + [value]
+                       acc[key] = if acc.key?(key)
+                                    case acc[key]
+                                    when Array
+                                      acc[key] + [value]
+                                    else
+                                      [value]
+                                    end
                                   else
-                                    [value]
+                                    value
                                   end
-                                else
-                                  value
-                                end
 
+                     end
                    end
-                 end
 
-      {
-        name => elements
-      }
+        {
+          name => elements
+        }
+      end
     end
+
+    alias_method :to_h, :to_hash
   end
 
-  alias to_h to_hash
-end
+  refine Nokogiri::XML::Document do
+    def to_hash
+      root.to_hash
+    end
 
-class Nokogiri::XML::Document
-  def to_hash
-    root.to_hash
+    alias_method :to_h, :to_hash
   end
-
-  alias to_h to_hash
 end
 
 class Inpi
   class SeizedImr
     attr_reader :sirens
+
+    using NokogiriRefinements
 
     def initialize(sirens)
       @sirens = sirens
